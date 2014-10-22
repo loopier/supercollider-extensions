@@ -56,25 +56,18 @@ Looper {
 	gui {
 		var window, width, height, mic_button, rec_all_button, clear_all_button, rate_label, length_label, amp_label;
 		var guis = ();
-		width = 640;
-		height = num_buffers * 30 + 60;
+		if(num_buffers < 3, {
+			width = 90 * 3;
+			},{
+			width = num_buffers * 90;//640;
+		});
+		height = 480;//num_buffers * 30 + 60;
 		window = Window.new("Looper", Rect(0,0,width,height));
 
 		num_buffers.do({|i|
-			guis.put(i, this.looperGui(window, index:i, y:(i*30)+30));
+			i.postln;
+			guis.put(i, this.looperGui(window, index:i, x:(i*90)));
 		});
-
-		rate_label = StaticText(window, Rect(guis[0][\rate_slider].bounds.left, 0, 120, 30));
-		rate_label.string_("Rate");
-		rate_label.align_(\center);
-
-		length_label = StaticText(window, Rect(guis[0][\length_slider].bounds.left, 0, 120, 30));
-		length_label.string_("Length");
-		length_label.align_(\center);
-
-		amp_label = StaticText(window, Rect(guis[0][\amp_slider].bounds.left, 0, 120, 30));
-		amp_label.string_("Amp");
-		amp_label.align_(\center);
 
 		mic_button = Button(window, Rect(0, window.bounds.height - 30, 90, 30));
 		mic_button.name_("mic_button");
@@ -117,10 +110,12 @@ Looper {
 	// control panel for one loopmachine (buffer)
 	looperGui { |parent, index=0, x=0, y=0, w=30, h=30|
 
-		var rec_button, rate_slider, rate_numbox, clear_button, rate_spec, length_slider, length_numbox, amp_slider, amp_numbox;
+		var rec_button, rate_label, rate_slider, rate_numbox, clear_button, length_label, length_slider, length_numbox, amp_label, amp_slider, amp_numbox, font;
+
+		font = Font("Arial", 11);
 
 		// REC CONTROL
-		rec_button = Button(parent, Rect(x,y,w*2,h));
+		rec_button = Button(parent, Rect(x,y,w*3,h));
 		rec_button.name_("rec_button_"++index);
 		rec_button.states_([
             ["REC", Color.black, Color.gray],
@@ -132,10 +127,19 @@ Looper {
 		});
 
 		// RATE CONTROL
-		rate_slider = Slider(parent,
-			Rect(x+rec_button.bounds.left+rec_button.bounds.width, y, w * 3, h));
+		y = y + rec_button.bounds.height;
+
+		// label
+		rate_label = StaticText(parent, Rect(x,y,w,h));
+		rate_label.string_("Rate");
+		rate_label.align_(\center);
+		rate_label.font_(font);
+
+		// slider
+		y = y + rate_label.bounds.height;
+
+		rate_slider = Slider(parent, Rect(x, y, w, 255));
 		rate_slider.name_("rate_slider_"++index);
-		// rate_slider.orientation_(\horizontal);
 		rate_slider.valueAction_(1.linlin(-4,4, 0,1));
 		rate_slider.action_({
 			var value = rate_slider.value.linlin(0,1,-4,4);
@@ -143,10 +147,14 @@ Looper {
 			// update numbox when the value has changed in the slider
 			rate_numbox.value_(value);
 		});
+		rate_slider.toolTip_("Rate");
 
-		rate_numbox = NumberBox(parent,
-			Rect(x+rate_slider.bounds.left+rate_slider.bounds.width, y, w * 1.5, h));
+		// numbox
+		y = y + rate_slider.bounds.height;
+
+		rate_numbox = NumberBox(parent, Rect(x, y, w, h));
 		rate_numbox.name_("rate_numbox_"++index);
+		rate_numbox.font_(font);
 		rate_numbox.step_(0.1);
 		rate_numbox.scroll_step_(0.1);
 		rate_numbox.valueAction_(1);
@@ -157,10 +165,20 @@ Looper {
 		});
 
 		// LENGTH CONTROL
-		length_slider = Slider(parent,
-			Rect(x+rate_numbox.bounds.left+rate_numbox.bounds.width, y, w * 3, h));
+		x = x + rate_slider.bounds.width;
+		y = rate_label.bounds.top;
+
+		// label
+		length_label = StaticText(parent, Rect(x,y,w,h));
+		length_label.string_("Len");
+		length_label.align_(\center);
+		length_label.font_(font);
+
+		// slider
+		y = rate_slider.bounds.top;
+
+		length_slider = Slider(parent, Rect(x, y, w, 255));
 		length_slider.name_("length_slider_"++index);
-		// .orientation_(\horizontal);
 		length_slider.value_(1);
 		length_slider.action_({
 			var value = length_slider.value;
@@ -169,9 +187,12 @@ Looper {
 			length_numbox.value_(value);
 		});
 
-		length_numbox = NumberBox(parent,
-			Rect(x+length_slider.bounds.left+length_slider.bounds.width, y, w * 1.5, h));
+		// numbox
+		y = rate_numbox.bounds.top;
+
+		length_numbox = NumberBox(parent, Rect(x, y, w, h));
 		length_numbox.name_("length_numbox_"++index);
+		length_numbox.font_(font);
 		length_numbox.step_(0.1);
 		length_numbox.scroll_step_(0.1);
 		length_numbox.valueAction_(1);
@@ -182,10 +203,21 @@ Looper {
 		});
 
 		// AMP CONTROL
-		amp_slider = Slider(parent,
-			Rect(x+length_numbox.bounds.left+length_numbox.bounds.width, y, w * 3, h));
+		x = x + length_slider.bounds.width;
+
+		//label
+		y = length_label.bounds.top;
+
+		amp_label = StaticText(parent, Rect(x, y, w, h));
+		amp_label.string_("Amp");
+		amp_label.align_(\center);
+		amp_label.font_(font);
+
+		// slider
+		y = length_slider.bounds.top;
+
+		amp_slider = Slider(parent, Rect(x, y, w, 255));
 		amp_slider.name_("amp_slider_"++index);
-		// amp_slider.orientation_(\horizontal);
 		amp_slider.value_(0.5);
 		amp_slider.action_({
 			var value = amp_slider.value;
@@ -194,9 +226,12 @@ Looper {
 			amp_numbox.value_(value);
 		});
 
-		amp_numbox = NumberBox(parent,
-			Rect(x+amp_slider.bounds.left+amp_slider.bounds.width, y, w * 1.5, h));
+		// numbox
+		y = length_numbox.bounds.top;
+
+		amp_numbox = NumberBox(parent, Rect(x, y, w, h));
 		amp_numbox.name_("amp_numbox_"++index);
+		amp_numbox.font_(font);
 		amp_numbox.step_(0.1);
 		amp_numbox.scroll_step_(0.1);
 		amp_numbox.valueAction_(1);
@@ -207,8 +242,9 @@ Looper {
 		});
 
 		// CLEAR CONTROL
-		clear_button = Button(parent,
-			Rect(x+amp_numbox.bounds.left+amp_numbox.bounds.width + 10,y,w*2,h));
+		x = rec_button.bounds.left;
+		y = rate_numbox.bounds.top + rate_numbox.bounds.height;
+		clear_button = Button(parent, Rect(x,y,w*3,h));
 		clear_button.name_("clear_button_"++index);
 		clear_button.states_([
             ["CLEAR", Color.black, Color.gray]
@@ -218,7 +254,7 @@ Looper {
 			buffers[index].zero;
 		});
 
-		^Dictionary.newFrom([rec_button:rec_button, rate_slider:rate_slider, rate_numbox:rate_numbox, clear_button:clear_button, rate_spec:rate_spec, length_slider:length_slider, length_numbox:length_numbox, amp_slider:amp_slider, amp_numbox:amp_numbox]);
+		^Dictionary.newFrom([rec_button:rec_button, rate_slider:rate_slider, rate_numbox:rate_numbox, clear_button:clear_button, length_slider:length_slider, length_numbox:length_numbox, amp_slider:amp_slider, amp_numbox:amp_numbox]);
 	}
 
 	clear {
