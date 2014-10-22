@@ -57,12 +57,12 @@ Looper {
 		var window, width, height, mic_button, rec_all_button, clear_all_button, rate_label, length_label, amp_label;
 		var guis = ();
 		if(num_buffers < 3, {
-			width = 90 * 3;
+			width = 90 * 3; // need to fit 3 buttons (REC ALL, CLEAR ALL and AUDIO IN)
 			},{
 			width = num_buffers * 90;//640;
 		});
 		height = 480;//num_buffers * 30 + 60;
-		window = Window.new("Looper", Rect(0,0,width,height));
+		window = Window.new("Looper", Rect(200,300,width,height));
 
 		num_buffers.do({|i|
 			i.postln;
