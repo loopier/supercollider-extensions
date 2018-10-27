@@ -69,6 +69,8 @@ Loopier {
 			d.add(item.folderName -> tempdict);
 			item.folderName.post; "(".post; item.entries.size.post; ")".postln;
 		});
+
+		d.removeAt(\foldernames);
 		/*d[\foldernames].do {
 			arg item, i;
 			// i.post;": ".post;d[\foldernames][i].folderName.post;": ".post;item.folderName.postln;
