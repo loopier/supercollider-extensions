@@ -1,14 +1,14 @@
 Loopier {
-
 	// boot server and display meter and scope with 2 channels
 	*boot { arg scopeStyle = 2, server = Server.default;
 		/*server.makeWindow;*/
 		// server.boot;
 		server.waitForBoot {
-			server.meter.window.bounds_(Rect(332,1024,138,253));
+			server.meter.window.bounds_(Rect(0,1024-400,138,253));
 			server.scope(2).style_(scopeStyle)
-			.window.bounds_(Rect( 0, 1024, 330, 312)); // s.meter.width
+			.window.bounds_(Rect( 0, 1024, 200, 250)); // s.meter.width
 			// FreqScope.new(400, 200, 0, server: server);
+			server.plotTree;
 		};
 	}
 
@@ -103,6 +103,18 @@ Loopier {
 		^d;
 	}
 
+	// loads samples from a folder.  Samples must be files within the given path
+	// returns an Array
+	*loadSamplesArray { arg path = "samples/", s = Server.default;
+		var a = Array.new;
+		PathName(path).entries.do({ |item, i|
+			// item.fullPath.postln;
+			a = a.add(Buffer.read(s, item.fullPath));
+		});
+		^a;
+	}
+
+
 	// loads samples from a folder.
 	// returns a Dictionary
 	*loadSamples { arg path = "samples/", s = Server.default;
@@ -141,5 +153,26 @@ Loopier {
 		Loopier.synthDefList.do {|i|
 			i.postln;
 		}
+	}
+
+	// Resets the FM7 modulators in the Pbindef
+	*resetFM7mods { arg name;
+		6.do { |i|
+			6.do { |n|
+				Pbindef(name.asSymbol,
+					((\mod++i++n).asSymbol), 0
+				);
+			};
+		};
+	}
+
+	// Returns an integer from a given array of 0s and 1s
+	// @param  array   Array[0,1]     An array representing a binary number
+	//                                              WANRING!: Reads from right to left!
+	//                                              e.g: [0,1] = 1; [1,0] = 2
+	*binaryArrayAsInteger{ arg array;
+		// (x + 2^0) + (x + 2^1) + (x + 2^2) + .. + (x + 2^n)
+		// where x=(value[0||1]) and n=(digit position in binary form)
+		^(array * 2.pow((0..array.size-1)).reverse).sum;
 	}
 }
